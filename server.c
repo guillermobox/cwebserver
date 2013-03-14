@@ -2,13 +2,57 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
+#include <fcntl.h>
+#include <time.h>
 
 void error(char * str){
     perror(str);
     exit(EXIT_FAILURE);
+}
+
+#define BUFFLEN 256
+void copy(char * filepath, int fdout){
+    char buffer[BUFFLEN], headers[128];
+    struct stat st;
+    int nchars, fd;
+    time_t t;
+
+    fd = open(filepath, O_RDONLY);
+    if( fd<0 ){
+        perror("opening file");
+        exit(1);
+    }
+    
+    stat(filepath, &st);
+
+    t = time(NULL);
+
+    bzero(headers, 128);
+    strcpy(headers, "HTTP/1.1 200 OK\n");
+    strcat(headers, "Content-Type: text/html\n");
+    sprintf(headers+strlen(headers), "Content-length: %ld\n", st.st_size);
+    strcat(headers, "Date: ");
+    strcat(headers, ctime(&t));
+    strcat(headers, "\n");
+
+    write(fdout, headers, strlen(headers));
+
+    while(1){
+        nchars = read(fd, buffer, BUFFLEN);
+        if( nchars == 0 ){
+            break;
+        }else if( nchars < 0 ){
+            perror("reading file");
+            exit(1);
+        }else{
+            write(fdout, buffer, nchars);
+        }
+    }
 }
 
 int main(int argc, char *argv[])
@@ -16,12 +60,7 @@ int main(int argc, char *argv[])
         int sockfd, newsockfd, portno;
         socklen_t clilen;
         char buffer[256];
-        char answer[] = "HTTP/1.1 200 OK\n"
-            "Content-Type: text/html\n"
-            "Date: Fri, 31 Dec 2003 23:59:59 GMT\n"
-            "Content-length: 12\n\n"
-            "Hello world\n";
-            
+
         struct sockaddr_in serv_addr, cli_addr;
         int n;
         int err;
@@ -61,9 +100,7 @@ int main(int argc, char *argv[])
 
         if (n < 0) error("ERROR reading from socket");
 
-        n = write(newsockfd, answer, strlen(answer));
-
-        if (n < 0) error("ERROR writing to socket");
+        copy("index.html", newsockfd);
 
         close(newsockfd);
 
