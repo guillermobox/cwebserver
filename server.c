@@ -62,8 +62,9 @@ char * geturl(char * header){
     ptstart = index(header, ' ')+2;
     ptend = index(ptstart, ' ');
 
-    ret = malloc(128*sizeof(char));
+    ret = calloc(128,sizeof(char));
     strncpy(ret, ptstart, ptend-ptstart);
+    ret[ strlen(ret) ] = '\0';
     return ret;
 }
 
@@ -94,30 +95,31 @@ int main(int argc, char *argv[])
 
         printf("Listening...\n");
         listen(sockfd,1);
-
         clilen = sizeof(cli_addr);
 
-        /* accept the connection */
-        printf("Accepting connection\n");
-        newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-        /* here I should span a new process with newsockfd */
-        printf("Accepted!\n"); 
+        while(1){
+                char * path;
 
-        if (newsockfd < 0) error("ERROR on accept");
+                newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
 
-        bzero(buffer,256);
+                if (newsockfd < 0) error("ERROR on accept");
 
-        /* read, answer and close */
-        n = read(newsockfd,buffer,255);
+                bzero(buffer,256);
 
-        char * path;
-        path = geturl( buffer );
+                n = read(newsockfd,buffer,255);
+                if (n < 0) error("ERROR reading from socket");
 
-        if (n < 0) error("ERROR reading from socket");
+                path = geturl( buffer );
+                puts(path);
 
-        copy(path, newsockfd);
+                if( access(path, R_OK)!=0 )
+                    write(newsockfd, "HTTP/1.1 404 Not found\n", 23);
+                else
+                    copy(path, newsockfd);
 
-        close(newsockfd);
+                free(path);
+                close(newsockfd);
+        }
 
         close(sockfd);
 
