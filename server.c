@@ -34,7 +34,7 @@ void copy(char * filepath, int fdout){
 
     bzero(headers, 128);
     strcpy(headers, "HTTP/1.1 200 OK\n");
-    strcat(headers, "Content-Type: text/html\n");
+    strcat(headers, "Content-Type: text/plain\n");
     sprintf(headers+strlen(headers), "Content-length: %ld\n", st.st_size);
     strcat(headers, "Date: ");
     strcat(headers, ctime(&t));
@@ -53,6 +53,18 @@ void copy(char * filepath, int fdout){
             write(fdout, buffer, nchars);
         }
     }
+}
+
+char * geturl(char * header){
+    char *ptstart, *ptend;
+    char * ret;
+
+    ptstart = index(header, ' ')+2;
+    ptend = index(ptstart, ' ');
+
+    ret = malloc(128*sizeof(char));
+    strncpy(ret, ptstart, ptend-ptstart);
+    return ret;
 }
 
 int main(int argc, char *argv[])
@@ -98,9 +110,12 @@ int main(int argc, char *argv[])
         /* read, answer and close */
         n = read(newsockfd,buffer,255);
 
+        char * path;
+        path = geturl( buffer );
+
         if (n < 0) error("ERROR reading from socket");
 
-        copy("index.html", newsockfd);
+        copy(path, newsockfd);
 
         close(newsockfd);
 
