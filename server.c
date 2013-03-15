@@ -68,6 +68,26 @@ char * geturl(char * header){
     return ret;
 }
 
+int handle(int newsockfd){
+        char buffer[256], *path;
+        int n;
+
+        bzero(buffer,256);
+        n = read(newsockfd,buffer,255);
+        if (n < 0) error("ERROR reading from socket");
+
+        path = geturl( buffer );
+        puts(path);
+
+        if( access(path, R_OK)!=0 )
+                write(newsockfd, "HTTP/1.1 404 Not found\n", 23);
+        else
+                copy(path, newsockfd);
+
+        free(path);
+        close(newsockfd);
+}
+
 int main(int argc, char *argv[])
 {
         int sockfd, newsockfd, portno;
@@ -101,24 +121,8 @@ int main(int argc, char *argv[])
                 char * path;
 
                 newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-
                 if (newsockfd < 0) error("ERROR on accept");
-
-                bzero(buffer,256);
-
-                n = read(newsockfd,buffer,255);
-                if (n < 0) error("ERROR reading from socket");
-
-                path = geturl( buffer );
-                puts(path);
-
-                if( access(path, R_OK)!=0 )
-                    write(newsockfd, "HTTP/1.1 404 Not found\n", 23);
-                else
-                    copy(path, newsockfd);
-
-                free(path);
-                close(newsockfd);
+                handle( newsockfd );
         }
 
         close(sockfd);
