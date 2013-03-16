@@ -9,6 +9,10 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <time.h>
+#include <arpa/inet.h>
+#include <regex.h>
+
+int sockfd=-1;
 
 void error (char *str) {
 	perror (str);
@@ -79,9 +83,11 @@ int handle (int newsockfd) {
 	bzero (buffer, 256);
 	n = read (newsockfd, buffer, 255);
 	if (n < 0)
-		error ("ERROR reading from socket");
+		error ("error reading");
 
 	path = geturl (buffer);
+	if( strlen(path)==0 ) puts(buffer);
+	puts(path);
 
 	while (n == 255)
 		n = read (newsockfd, buffer, 255);
@@ -95,23 +101,34 @@ int handle (int newsockfd) {
 	free (path);
 }
 
+void waitforit(int sig){
+	int a;
+	wait(&a);
+}
+
+void abandonship(int sig){
+	printf("[%d childof %d] %s\n", getpid(), getppid(), "KILLSIGNAL received, quitting...");
+	fflush(stdout);
+	if( sockfd!=-1 ) close(sockfd);
+	sockfd = -1;
+}
+	
 int main (int argc, char *argv[]) {
-	int sockfd, newsockfd, portno, pid;
+	int  newsockfd, portno, pid;
 	socklen_t clilen;
 	char buffer[256];
 
 	struct sockaddr_in serv_addr, cli_addr;
 	int err;
 
-	signal (SIGCHLD, SIG_IGN);
+	signal (SIGINT,  &abandonship);
+	signal (SIGCHLD, &waitforit);
 	portno = 8080;
 
-	/* create socket */
 	sockfd = socket (AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0)
-		error ("ERROR opening socket");
+		error ("error socketing");
 
-	/* bind socket to port 80 and own host */
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons (portno);
@@ -127,15 +144,20 @@ int main (int argc, char *argv[]) {
 
 		newsockfd = accept (sockfd, (struct sockaddr *) &cli_addr, &clilen);
 		if (newsockfd < 0)
-			error ("ERROR on accept");
+			error ("error accepting");
 
-		pid = fork ();
-		if (pid == 0) {
-			close (sockfd);
-			handle (newsockfd);
-			exit (0);
+		switch( fork() ){
+			case -1:
+				error("error forking\n");
+				break;
+			case 0:
+				close (sockfd);
+				handle (newsockfd);
+				exit (EXIT_SUCCESS);
+				break;
+			default:
+				close (newsockfd);
 		}
-		close (newsockfd);
 	}
 
 	close (sockfd);
