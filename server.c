@@ -12,7 +12,7 @@
 #include <arpa/inet.h>
 #include <regex.h>
 
-int sockfd=-1;
+int sockfd = -1;
 
 void error(char *str)
 {
@@ -35,7 +35,7 @@ void copy(char *filepath, int fdout)
 		exit(EXIT_FAILURE);
 	}
 
-	buffer = (char*)malloc(BUFFLEN * sizeof(char));
+	buffer = (char *) malloc(BUFFLEN * sizeof(char));
 
 	stat(filepath, &st);
 
@@ -43,11 +43,12 @@ void copy(char *filepath, int fdout)
 
 	bzero(headers, 128);
 	strcpy(headers, "HTTP/1.1 200 OK\n");
-	if (strncmp(filepath + strlen(filepath) - 5, ".html", 5)==0)
+	if (strncmp(filepath + strlen(filepath) - 5, ".html", 5) == 0)
 		strcat(headers, "Content-Type: text/html\n");
 	else
 		strcat(headers, "Content-Type: text/plain\n");
-	sprintf(headers + strlen(headers), "Content-length: %ld\n", st.st_size);
+	sprintf(headers + strlen(headers), "Content-length: %ld\n",
+		st.st_size);
 	strcat(headers, "Date: ");
 	strcat(headers, ctime(&t));
 	strcat(headers, "\n");
@@ -59,10 +60,10 @@ void copy(char *filepath, int fdout)
 		if (nchars == 0) {
 			break;
 		} else if (nchars < 0) {
-			perror ("reading file");
-			exit (1);
+			perror("reading file");
+			exit(1);
 		} else {
-			write (fdout, buffer, nchars);
+			write(fdout, buffer, nchars);
 		}
 	}
 	close(fd);
@@ -93,7 +94,7 @@ int handle(int newsockfd)
 		error("error reading");
 
 	path = geturl(buffer);
-	if (strlen(path)==0)
+	if (strlen(path) == 0)
 		puts(buffer);
 	puts(path);
 
@@ -117,14 +118,15 @@ void waitforit(int sig)
 
 void abandonship(int sig)
 {
-	printf("[%d childof %d] %s\n", getpid(), getppid(), "KILLSIGNAL received, quitting...");
+	printf("[%d childof %d] %s\n", getpid(), getppid(),
+	       "KILLSIGNAL received, quitting...");
 	fflush(stdout);
-	if (sockfd!=-1)
+	if (sockfd != -1)
 		close(sockfd);
 	sockfd = -1;
 }
-	
-int main (int argc, char *argv[])
+
+int main(int argc, char *argv[])
 {
 	int newsockfd, portno, pid;
 	socklen_t clilen;
@@ -133,7 +135,7 @@ int main (int argc, char *argv[])
 	struct sockaddr_in serv_addr, cli_addr;
 	int err;
 
-	signal(SIGINT,  &abandonship);
+	signal(SIGINT, &abandonship);
 	signal(SIGCHLD, &waitforit);
 	portno = 8080;
 
@@ -145,7 +147,9 @@ int main (int argc, char *argv[])
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(portno);
 
-	err = bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+	err =
+	    bind(sockfd, (struct sockaddr *) &serv_addr,
+		 sizeof(serv_addr));
 	if (err < 0)
 		error("error binding\n");
 
@@ -153,9 +157,10 @@ int main (int argc, char *argv[])
 	clilen = sizeof(cli_addr);
 
 	while (1) {
-		newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+		newsockfd =
+		    accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
 		if (newsockfd < 0)
-			error ("error accepting");
+			error("error accepting");
 
 		switch (fork()) {
 		case -1:
