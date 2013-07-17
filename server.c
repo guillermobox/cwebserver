@@ -41,7 +41,10 @@ void copy (char *filepath, int fdout) {
 
 	bzero (headers, 128);
 	strcpy (headers, "HTTP/1.1 200 OK\n");
-	strcat (headers, "Content-Type: text/plain\n");
+	if( strncmp(filepath+strlen(filepath)-5, ".html", 5)==0 )
+		strcat (headers, "Content-Type: text/html\n");
+	else
+		strcat (headers, "Content-Type: text/plain\n");
 	sprintf (headers + strlen (headers), "Content-length: %ld\n", st.st_size);
 	strcat (headers, "Date: ");
 	strcat (headers, ctime (&t));
