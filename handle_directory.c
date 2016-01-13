@@ -30,9 +30,9 @@ static char * format_direntry(const char *url, const char * dirpath, struct dire
 	stat(path, &st);
 
 	if (S_ISDIR(st.st_mode)) {
-		snprintf(buffer, 256, "<li class=\"folder\"><a href=\"%s/%s\">%s</a></li>\n", url + 1, entry->d_name, entry->d_name);
+		snprintf(buffer, 256, "<li class=\"folder\"><a href=\"%s/%s\">%s</a></li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name);
 	} else {
-		snprintf(buffer, 256, "<li class=\"file\"><a href=\"%s/%s\">%s</a></li>\n", url + 1, entry->d_name, entry->d_name);
+		snprintf(buffer, 256, "<li class=\"file\"><a href=\"%s/%s\">%s</a></li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name);
 	}
 
 	return buffer;
@@ -57,11 +57,11 @@ void handle_directory(const char * url, const char * path, int fdout)
 
 	sprintf(buffer, "<!DOCTYPE html>\n"
 			"<html>\n"
-			"<head>\n<style type=\"text/css\">li.folder{\nlist-style-image: url(data:image/png;base64,%s);list-style-position:inside;\n}\nli.file{\nlist-style-image: url(data:image/png;base64,%s);list-style-position: inside;\n}\n</style>\n<title>%s</title></head>\n"
-			"<body><h1>Directory contents</h1><ul>",
+			"<head>\n<style type=\"text/css\">li.folder{\nfont-family:monospace;list-style-image: url(data:image/png;base64,%s);list-style-position:inside;\n}\nli.file{\nfont-family:monospace;list-style-image: url(data:image/png;base64,%s);list-style-position: inside;\n}\n</style>\n<title>%s</title></head>\n"
+			"<body><p><b>Directory contents of %s</b></p><ul>",
 			"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAOdEVYdFRpdGxlAEZvbGRlcnMhVKpgQQAAABd0RVh0QXV0aG9yAExhcG8gQ2FsYW1hbmRyZWnfkRoqAAAAKXRFWHREZXNjcmlwdGlvbgBCYXNlZCBvZiBKYWt1YiBTdGVpbmVyIGRlc2lnbqCEBXMAAAGHSURBVDiNpZM/a5NRFId/53rTRGMaE4NODuLgUKEdbSkInepgKXWyswiK4ufwAyh+iFJ0cpEWdJAu/mk7FFpBcImF0peY5E3uue/5OTSiAfNC4x3ucM89z3nOgSMk8T9HHt+98RTkM0CKwxEcW+SD569213IBT1amWkurjyqFQgE0g1kGswyddgubb9a6oZfOvni9t51jMKXL9x767wdf/ipOTHjCoubq/2y3N7yDIO22/rzS4BAxPbuE+qUrI5NjSPF2/eWCr9dr8uPbLrJBtYnSOUzP3UalWkPS3B8JqF6+hqARvtG4eGZ+cRXVWgPkiUG/m6CTNHP1LVOoKryqojJ5AUnza27CKIALQWFZ/rD+DYgIQeFUFZbFMQADA9U4toFqHBjE8Q18UAUtg4gb/iG/r8GuDK0MQYsIqvCkWSftunL5PEQcROQEJg7iBCBBEqSBJEADaUiODkGaeSPeffywcevm/IKcpoWdT1sk8V7u37l+tVw6u97v92ZOAygWS587vXTlF5yo2ogR3/0GAAAAAElFTkSuQmCC",
 			"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAASdEVYdFRpdGxlAFBhcGVyIFNoZWV0c7mvkfkAAAAXdEVYdEF1dGhvcgBMYXBvIENhbGFtYW5kcmVp35EaKgAAACd0RVh0RGVzY3JpcHRpb24Ad2l0aCBhIEhVR0UgaGVscCBmcm9tIEpha3VihlQHswAAAhNJREFUOI11kstqU1EUhr91ctI2A2uTNsRaOxDEkeILiIgTL6CCAx+iUnTSgQPBRxAFSxWhA8XiBQst7aQjUV+kMWlzOaeJVZvsy3JwctK0wQWLvQabb/3/v7eoKuubqzdFZMk5PwuKqqIKoAB/Qba8d8/v3b2/xfFSVVbXPpWbUUO990Pd7Xa0Uv2paxurf1Y+vnucwA87AOh0OjP5iQL7v/dptWOacZ1ao0plZ5vdepV2q8Wt67dzxanik7fvlxcGBQQAxlgAqpUK5e0KO5Ua9d2IuNlmL/pFuVwhCAKuXrmWGx0Ze/pm+dXlFBAmAANAYSqPcy5p73DO4pwjE8OHzyuMZXNcvHAp9/3H1wXgWx9gjQGURi3CWjuU01S+xMkTBbxYgiCQg4ODGy9ePsvMzz1yfQUKTBTGcc7iVVHv8T5V4hhhFJExzp09z8bmesarzwIpINkaN1s454YUpCWBkC706gcysEkG+clxnPNo7y/0PsMhQHoAa1CvwyFCQBAoipBcFY4eyWCtxTt/FCBAHO3h7P8tZMIMpeI0xlh8z+pABkLpVBG0J1UGVKQKVBARrDH9rAaeERq1iG63298YhiFnZmf63rWXiTEGd9wCwOmZaUTkaA8ooJfpEEBEqnEcTRcKk//1n1a73QIkMtZ0EluqzD98cCfMhoum2y2pgpI84fEZlGx2pG6MmVtafP0F4B+wR1eZMTEGTgAAAABJRU5ErkJggg==",
-			path);
+			url, url);
 
 	allocated = 16;
 	used = 0;
