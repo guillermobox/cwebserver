@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <limits.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -15,6 +17,7 @@
 #include <magic.h>
 
 int sockfd = -1;
+char basedir[PATH_MAX];
 
 void error(char *str)
 {
@@ -82,7 +85,7 @@ char *geturl(char *header)
 	char *ptstart, *ptend;
 	char *ret;
 
-	ptstart = index(header, ' ') + 2;
+	ptstart = index(header, ' ') + 1;
 	ptend = index(ptstart, ' ');
 
 	ret = calloc(128, sizeof(char));
@@ -93,7 +96,7 @@ char *geturl(char *header)
 
 int handle(int newsockfd)
 {
-	char buffer[256], *path;
+	char buffer[256], path[PATH_MAX], *url;
 	int n;
 
 	bzero(buffer, 256);
@@ -101,7 +104,8 @@ int handle(int newsockfd)
 	if (n < 0)
 		error("error reading");
 
-	path = geturl(buffer);
+	url = geturl(buffer);
+	snprintf(path, PATH_MAX, "%s/%s", basedir, url);
 
 	while (n == 255)
 		n = read(newsockfd, buffer, 255);
@@ -112,7 +116,7 @@ int handle(int newsockfd)
 		copy(path, newsockfd);
 
 	close(newsockfd);
-	free(path);
+	free(url);
 	return 0;
 }
 
@@ -133,6 +137,16 @@ void abandonship(int sig)
 	sockfd = -1;
 }
 
+void info(const char *format, ...)
+{
+	va_list args;
+
+	va_start(args, format);
+	vprintf(format, args);
+	va_end(args);
+	putchar('\n');
+}
+
 int main(int argc, char *argv[])
 {
 	int newsockfd, portno;
@@ -140,6 +154,18 @@ int main(int argc, char *argv[])
 
 	struct sockaddr_in serv_addr, cli_addr;
 	int err;
+
+	if (argc < 2) {
+		printf("Please provide a directory to serve\n");
+		exit(EXIT_FAILURE);
+	};
+
+	if (!realpath(argv[1], basedir)) {
+		printf("Folder not found!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	info("Serving directory: %s", basedir);
 
 	signal(SIGINT, &abandonship);
 	signal(SIGCHLD, &waitforit);
