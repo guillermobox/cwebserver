@@ -5,12 +5,14 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <time.h>
 #include <arpa/inet.h>
 #include <regex.h>
+#include <magic.h>
 
 int sockfd = -1;
 
@@ -28,6 +30,15 @@ void copy(char *filepath, int fdout)
 	int fd;
 	time_t t;
 	ssize_t nchars;
+	magic_t magic;
+
+	magic = magic_open(MAGIC_MIME_TYPE);
+	if (magic == NULL) {
+		error("No magic found!");
+	}
+	if (magic_load(magic, NULL)) {
+		error("Impossible to load");
+	};
 
 	fd = open(filepath, O_RDONLY);
 	if (fd < 0) {
@@ -43,15 +54,13 @@ void copy(char *filepath, int fdout)
 
 	bzero(headers, 128);
 	strcpy(headers, "HTTP/1.1 200 OK\n");
-	if (strncmp(filepath + strlen(filepath) - 5, ".html", 5) == 0)
-		strcat(headers, "Content-Type: text/html\n");
-	else
-		strcat(headers, "Content-Type: text/plain\n");
-	sprintf(headers + strlen(headers), "Content-length: %ld\n",
-		st.st_size);
-	strcat(headers, "Date: ");
-	strcat(headers, ctime(&t));
-	strcat(headers, "\n");
+	sprintf(headers + strlen(headers),
+			"Content-type: %s\n"
+			"Content-length: %ld\n"
+			"Date: %s\n",
+			magic_file(magic, filepath),
+			st.st_size,
+			ctime(&t));
 
 	write(fdout, headers, strlen(headers));
 
@@ -67,6 +76,7 @@ void copy(char *filepath, int fdout)
 		}
 	}
 	close(fd);
+	magic_close(magic);
 }
 
 char *geturl(char *header)
@@ -94,9 +104,6 @@ int handle(int newsockfd)
 		error("error reading");
 
 	path = geturl(buffer);
-	if (strlen(path) == 0)
-		puts(buffer);
-	puts(path);
 
 	while (n == 255)
 		n = read(newsockfd, buffer, 255);
@@ -151,7 +158,7 @@ int main(int argc, char *argv[])
 	    bind(sockfd, (struct sockaddr *) &serv_addr,
 		 sizeof(serv_addr));
 	if (err < 0)
-		error("error binding\n");
+		error("error binding");
 
 	listen(sockfd, 5);
 	clilen = sizeof(cli_addr);
@@ -164,7 +171,7 @@ int main(int argc, char *argv[])
 
 		switch (fork()) {
 		case -1:
-			error("error forking\n");
+			error("error forking");
 			break;
 		case 0:
 			close(sockfd);
