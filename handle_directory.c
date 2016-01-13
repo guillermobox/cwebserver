@@ -68,6 +68,8 @@ void handle_directory(const char * url, const char * path, int fdout)
 	entries = malloc(sizeof(struct dirent) * allocated);
 
 	while ((entry = readdir(dir))) {
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+			continue;
 		if (used == allocated) {
 			allocated *= 2;
 			entries = realloc(entries, sizeof(struct dirent) * allocated);
