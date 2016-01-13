@@ -8,6 +8,18 @@
 
 extern char * basedir;
 
+static int sort_dirs(const void *a, const void *b)
+{
+	struct dirent *da = (struct dirent *) a;
+	struct dirent *db = (struct dirent *) b;
+	
+	if (da->d_type != db->d_type) {
+		return da->d_type - db->d_type;
+	} else {
+		return strcmp(da->d_name, db->d_name);
+	}
+}
+
 static char * format_direntry(const char *url, const char * dirpath, struct dirent * entry)
 {
 	static char buffer[256];
@@ -30,7 +42,8 @@ void handle_directory(const char * url, const char * path, int fdout)
 {
 	char headers[128], buffer[1024 * 256];
 	DIR * dir;
-	struct dirent * entry;
+	struct dirent * entry, * entries;
+	size_t allocated, used;
 	time_t t;
 
 	bzero(buffer, 1024 * 256);
@@ -50,8 +63,26 @@ void handle_directory(const char * url, const char * path, int fdout)
 			"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAASdEVYdFRpdGxlAFBhcGVyIFNoZWV0c7mvkfkAAAAXdEVYdEF1dGhvcgBMYXBvIENhbGFtYW5kcmVp35EaKgAAACd0RVh0RGVzY3JpcHRpb24Ad2l0aCBhIEhVR0UgaGVscCBmcm9tIEpha3VihlQHswAAAhNJREFUOI11kstqU1EUhr91ctI2A2uTNsRaOxDEkeILiIgTL6CCAx+iUnTSgQPBRxAFSxWhA8XiBQst7aQjUV+kMWlzOaeJVZvsy3JwctK0wQWLvQabb/3/v7eoKuubqzdFZMk5PwuKqqIKoAB/Qba8d8/v3b2/xfFSVVbXPpWbUUO990Pd7Xa0Uv2paxurf1Y+vnucwA87AOh0OjP5iQL7v/dptWOacZ1ao0plZ5vdepV2q8Wt67dzxanik7fvlxcGBQQAxlgAqpUK5e0KO5Ua9d2IuNlmL/pFuVwhCAKuXrmWGx0Ze/pm+dXlFBAmAANAYSqPcy5p73DO4pwjE8OHzyuMZXNcvHAp9/3H1wXgWx9gjQGURi3CWjuU01S+xMkTBbxYgiCQg4ODGy9ePsvMzz1yfQUKTBTGcc7iVVHv8T5V4hhhFJExzp09z8bmesarzwIpINkaN1s454YUpCWBkC706gcysEkG+clxnPNo7y/0PsMhQHoAa1CvwyFCQBAoipBcFY4eyWCtxTt/FCBAHO3h7P8tZMIMpeI0xlh8z+pABkLpVBG0J1UGVKQKVBARrDH9rAaeERq1iG63298YhiFnZmf63rWXiTEGd9wCwOmZaUTkaA8ooJfpEEBEqnEcTRcKk//1n1a73QIkMtZ0EluqzD98cCfMhoum2y2pgpI84fEZlGx2pG6MmVtafP0F4B+wR1eZMTEGTgAAAABJRU5ErkJggg==",
 			path);
 
+	allocated = 16;
+	used = 0;
+	entries = malloc(sizeof(struct dirent) * allocated);
+
 	while ((entry = readdir(dir))) {
+		if (used == allocated) {
+			allocated *= 2;
+			entries = realloc(entries, sizeof(struct dirent) * allocated);
+		}
+		memcpy(entries + used, entry, sizeof(struct dirent));
+		used++;
+	}
+
+	qsort(entries, used, sizeof(struct dirent), sort_dirs);
+
+	entry = entries;
+	while (used) {
 		sprintf(buffer + strlen(buffer), format_direntry(url, path, entry));
+		used--;
+		entry++;
 	}
 
 	strcat(buffer,"</ul></body>\n</html>\n");
@@ -66,6 +97,7 @@ void handle_directory(const char * url, const char * path, int fdout)
 	write(fdout, headers, strlen(headers));
 	write(fdout, buffer, strlen(buffer));
 
+	free(entries);
 	closedir(dir);
 }
 
