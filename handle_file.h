@@ -1,2 +1,1 @@
-
-void handle_file(char *filepath, int fdout);
+void handle_file(const char *url, const char *path, int fdout);

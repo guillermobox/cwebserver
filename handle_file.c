@@ -11,7 +11,7 @@
 #include "util.h"
 
 #define BUFFLEN 256
-void handle_file(char *filepath, int fdout)
+void handle_file(const char *url, const char *path, int fdout)
 {
 	char *buffer, headers[128];
 	struct stat st;
@@ -28,7 +28,7 @@ void handle_file(char *filepath, int fdout)
 		error("Impossible to load");
 	};
 
-	fd = open(filepath, O_RDONLY);
+	fd = open(path, O_RDONLY);
 	if (fd < 0) {
 		perror("opening file");
 		exit(EXIT_FAILURE);
@@ -36,7 +36,7 @@ void handle_file(char *filepath, int fdout)
 
 	buffer = (char *) malloc(BUFFLEN * sizeof(char));
 
-	stat(filepath, &st);
+	stat(path, &st);
 
 	t = time(NULL);
 
@@ -44,7 +44,7 @@ void handle_file(char *filepath, int fdout)
 	strcpy(headers, "HTTP/1.1 200 OK\n");
 	sprintf(headers + strlen(headers),
 		"Content-type: %s\n" "Content-length: %ld\n" "Date: %s\n",
-		magic_file(magic, filepath), st.st_size, ctime(&t));
+		magic_file(magic, path), st.st_size, ctime(&t));
 
 	write(fdout, headers, strlen(headers));
 

@@ -53,9 +53,9 @@ int handle(int newsockfd)
 	stat(path, &path_stat);
 
 	if (S_ISDIR(path_stat.st_mode)) {
-		handle_directory(path, newsockfd);
+		handle_directory(url, path, newsockfd);
 	} else{
-		handle_file(path, newsockfd);
+		handle_file(url, path, newsockfd);
 	}
 
 	close(newsockfd);

@@ -1,1 +1,1 @@
-void handle_directory(char * dirpath, int fdout);
+void handle_directory(const char *url, const char *path, int fdout);
