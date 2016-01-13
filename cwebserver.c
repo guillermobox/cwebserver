@@ -115,6 +115,8 @@ int main(int argc, char *argv[])
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(portno);
 
+	info("Serving in http://%s:%d/", "127.0.0.1", ntohs(serv_addr.sin_port));
+
 	err = bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
 	if (err < 0)
 		error("error binding");
