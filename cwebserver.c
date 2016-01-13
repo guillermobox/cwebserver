@@ -55,12 +55,8 @@ void copy(char *filepath, int fdout)
 	bzero(headers, 128);
 	strcpy(headers, "HTTP/1.1 200 OK\n");
 	sprintf(headers + strlen(headers),
-			"Content-type: %s\n"
-			"Content-length: %ld\n"
-			"Date: %s\n",
-			magic_file(magic, filepath),
-			st.st_size,
-			ctime(&t));
+		"Content-type: %s\n" "Content-length: %ld\n" "Date: %s\n",
+		magic_file(magic, filepath), st.st_size, ctime(&t));
 
 	write(fdout, headers, strlen(headers));
 
@@ -68,10 +64,12 @@ void copy(char *filepath, int fdout)
 		nchars = read(fd, buffer, BUFFLEN);
 		if (nchars == 0) {
 			break;
-		} else if (nchars < 0) {
+		}
+		else if (nchars < 0) {
 			perror("reading file");
 			exit(1);
-		} else {
+		}
+		else {
 			write(fdout, buffer, nchars);
 		}
 	}
@@ -121,6 +119,7 @@ int handle(int newsockfd)
 void waitforit(int sig)
 {
 	int a;
+
 	wait(&a);
 }
 
@@ -154,9 +153,7 @@ int main(int argc, char *argv[])
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(portno);
 
-	err =
-	    bind(sockfd, (struct sockaddr *) &serv_addr,
-		 sizeof(serv_addr));
+	err = bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
 	if (err < 0)
 		error("error binding");
 
