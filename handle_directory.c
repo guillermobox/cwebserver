@@ -8,7 +8,7 @@
 
 extern char * basedir;
 
-static char * format_direntry(const char * dirpath, struct dirent * entry)
+static char * format_direntry(const char *url, const char * dirpath, struct dirent * entry)
 {
 	static char buffer[256];
 	char path[PATH_MAX];
@@ -18,9 +18,9 @@ static char * format_direntry(const char * dirpath, struct dirent * entry)
 	stat(path, &st);
 
 	if (S_ISDIR(st.st_mode)) {
-		snprintf(buffer, 256, "<li class=\"folder\"><a href=\"%s\">%s</a></li>\n", entry->d_name, entry->d_name);
+		snprintf(buffer, 256, "<li class=\"folder\"><a href=\"%s/%s\">%s</a></li>\n", url + 1, entry->d_name, entry->d_name);
 	} else {
-		snprintf(buffer, 256, "<li class=\"file\"><a href=\"%s\">%s</a></li>\n", entry->d_name, entry->d_name);
+		snprintf(buffer, 256, "<li class=\"file\"><a href=\"%s/%s\">%s</a></li>\n", url + 1, entry->d_name, entry->d_name);
 	}
 
 	return buffer;
@@ -51,7 +51,7 @@ void handle_directory(const char * url, const char * path, int fdout)
 			path);
 
 	while ((entry = readdir(dir))) {
-		sprintf(buffer + strlen(buffer), format_direntry(path, entry));
+		sprintf(buffer + strlen(buffer), format_direntry(url, path, entry));
 	}
 
 	strcat(buffer,"</ul></body>\n</html>\n");
