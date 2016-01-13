@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
 
 	struct sockaddr_in serv_addr, cli_addr;
 	int err;
+	int sleeptime = 10;
 
 	if (argc < 2) {
 		printf("Please provide a directory to serve\n");
@@ -117,9 +118,13 @@ int main(int argc, char *argv[])
 
 	info("Serving in http://%s:%d/", "127.0.0.1", ntohs(serv_addr.sin_port));
 
-	err = bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-	if (err < 0)
-		error("error binding");
+	while ((err = bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)))) {
+		perror("error binding");
+		printf("Trying again in %d seconds\n", sleeptime);
+		sleep(sleeptime);
+	}
+
+	info("Socket binded\n");
 
 	listen(sockfd, 5);
 	clilen = sizeof(cli_addr);
