@@ -33,7 +33,7 @@ char *geturl(char *header)
 	return ret;
 }
 
-int handle(int newsockfd)
+int handle(int newsockfd, struct sockaddr_in socket, socklen_t socklen)
 {
 	char buffer[256], path[PATH_MAX], *url;
 	struct stat path_stat;
@@ -45,6 +45,9 @@ int handle(int newsockfd)
 		error("error reading");
 
 	url = geturl(buffer);
+
+	printf("[%s] %s\n", inet_ntoa(socket.sin_addr), url);
+
 	snprintf(path, PATH_MAX, "%s/%s", basedir, url);
 
 	while (n == 255)
@@ -131,7 +134,7 @@ int main(int argc, char *argv[])
 			break;
 		case 0:
 			close(sockfd);
-			handle(newsockfd);
+			handle(newsockfd, cli_addr, clilen);
 			exit(EXIT_SUCCESS);
 			break;
 		default:
