@@ -115,6 +115,7 @@ int handle(int newsockfd)
 
 	close(newsockfd);
 	free(path);
+	return 0;
 }
 
 void waitforit(int sig)
@@ -135,9 +136,8 @@ void abandonship(int sig)
 
 int main(int argc, char *argv[])
 {
-	int newsockfd, portno, pid;
+	int newsockfd, portno;
 	socklen_t clilen;
-	char buffer[256];
 
 	struct sockaddr_in serv_addr, cli_addr;
 	int err;
