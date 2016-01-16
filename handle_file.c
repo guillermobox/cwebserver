@@ -20,7 +20,7 @@ void handle_file(const char *url, const char *path, int fdout)
 	ssize_t nchars;
 	magic_t magic;
 
-	magic = magic_open(MAGIC_MIME_TYPE);
+	magic = magic_open(MAGIC_MIME);
 	if (magic == NULL) {
 		error("No magic found!");
 	}
