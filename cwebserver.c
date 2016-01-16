@@ -28,7 +28,7 @@ static char tohex(char high, char low)
 	if (low > 9)
 		low -= 7;
 	return high * 16 + low;
-};
+}
 
 char *geturl(char *header)
 {
@@ -61,6 +61,8 @@ int handle(int newsockfd, struct sockaddr_in socket, socklen_t socklen)
 	char buffer[256], path[PATH_MAX], *url;
 	struct stat path_stat;
 	int n;
+
+	(void) socklen;
 
 	bzero(buffer, 256);
 	n = read(newsockfd, buffer, 255);
@@ -95,11 +97,15 @@ void waitforit(int sig)
 {
 	int a;
 
+	(void) sig;
+
 	wait(&a);
 }
 
 void abandonship(int sig)
 {
+	(void) sig;
+
 	printf("[%d childof %d] %s\n", getpid(), getppid(),
 	       "KILLSIGNAL received, quitting...");
 	fflush(stdout);

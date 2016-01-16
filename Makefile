@@ -1,5 +1,5 @@
 LDFLAGS += -lmagic
-CFLAGS += -Wall -O2
+CFLAGS += -Wall -O2 -pedantic -Wextra
 
 .PHONY: clean
 

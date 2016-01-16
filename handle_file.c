@@ -20,6 +20,8 @@ void handle_file(const char *url, const char *path, int fdout)
 	ssize_t nchars;
 	magic_t magic;
 
+	(void) url;
+
 	magic = magic_open(MAGIC_MIME);
 	if (magic == NULL) {
 		error("No magic found!");
