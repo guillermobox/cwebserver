@@ -77,12 +77,14 @@ int handle(int newsockfd, struct sockaddr_in socket, socklen_t socklen)
 	while (n == 255)
 		n = read(newsockfd, buffer, 255);
 
-	stat(path, &path_stat);
-
-	if (S_ISDIR(path_stat.st_mode)) {
-		handle_directory(url, path, newsockfd);
-	} else{
-		handle_file(url, path, newsockfd);
+	if (stat(path, &path_stat)) {
+		write(newsockfd, "HTTP/1.1 404 Not Found\n", 23);
+	} else {
+		if (S_ISDIR(path_stat.st_mode)) {
+			handle_directory(url, path, newsockfd);
+		} else {
+			handle_file(url, path, newsockfd);
+		}
 	}
 
 	close(newsockfd);
