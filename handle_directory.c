@@ -93,7 +93,7 @@ void handle_directory(const char * url, const char * path, int fdout)
 
 	strcpy(headers, "HTTP/1.1 200 OK\n");
 	sprintf(headers + strlen(headers),
-		"Content-type: %s\n" "Content-length: %ld\n" "Date: %s\n",
+		"Content-type: %s\n" "Content-length: %zd\n" "Date: %s\n",
 		"text/html", strlen(buffer), ctime(&t));
 
 	write(fdout, headers, strlen(headers));
