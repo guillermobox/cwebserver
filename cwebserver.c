@@ -36,7 +36,7 @@ char *geturl(char *header)
 	char *ret, *write;
 
 	ptstart = index(header, ' ') + 1; /* this points to the first slash */
-	ptend = index(ptstart, ' '); /* this points to the end of the thing */
+	ptend = strtok(ptstart, " ?"); /* this points to the end of the thing */
 
 	write = ret = calloc(ptend - ptstart + 1, sizeof(char));
 	while (ptstart != ptend) {
