@@ -19,17 +19,41 @@
 int sockfd = -1;
 char basedir[PATH_MAX];
 
+static char tohex(char high, char low)
+{
+	high -= 48;
+	low -= 48;
+	if (high > 9)
+		high -= 7;
+	if (low > 9)
+		low -= 7;
+	return high * 16 + low;
+};
+
 char *geturl(char *header)
 {
 	char *ptstart, *ptend;
-	char *ret;
+	char *ret, *write;
 
-	ptstart = index(header, ' ') + 1;
-	ptend = index(ptstart, ' ');
+	ptstart = index(header, ' ') + 1; /* this points to the first slash */
+	ptend = index(ptstart, ' '); /* this points to the end of the thing */
 
-	ret = calloc(128, sizeof(char));
-	strncpy(ret, ptstart, ptend - ptstart);
-	ret[strlen(ret)] = '\0';
+	write = ret = calloc(ptend - ptstart, sizeof(char));
+	while (ptstart != ptend) {
+		if (*ptstart == '%') {
+			ptstart++;
+			char low, high;
+			high = *ptstart++;
+			low  = *ptstart;
+			*write = tohex(high, low);
+		} else {
+			*write = *ptstart;
+		}
+		ptstart ++;
+		write ++;
+	}
+	//strncpy(ret, ptstart, ptend - ptstart);
+	*write = '\0';
 	return ret;
 }
 
