@@ -131,7 +131,11 @@ int main(int argc, char *argv[])
 
 	signal(SIGINT, &abandonship);
 	signal(SIGCHLD, &waitforit);
-	portno = 8080;
+
+	if (getuid())
+		portno = 8080;
+	else
+		portno = 80;
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0)
