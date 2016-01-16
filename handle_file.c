@@ -61,6 +61,7 @@ void handle_file(const char *url, const char *path, int fdout)
 			write(fdout, buffer, nchars);
 		}
 	}
+	free(buffer);
 	close(fd);
 	magic_close(magic);
 }
