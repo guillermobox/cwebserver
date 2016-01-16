@@ -57,6 +57,7 @@ void handle_directory(const char * url, const char * path, int fdout)
 
 	sprintf(buffer, "<!DOCTYPE html>\n"
 			"<html>\n"
+			"<meta charset=\"UTF-8\">\n"
 			"<head>\n<style type=\"text/css\">li.folder{\nfont-family:monospace;list-style-image: url(data:image/png;base64,%s);list-style-position:inside;\n}\nli.file{\nfont-family:monospace;list-style-image: url(data:image/png;base64,%s);list-style-position: inside;\n}\n</style>\n<title>%s</title></head>\n"
 			"<body><p><b>Directory contents of %s</b></p><ul>",
 			"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAOdEVYdFRpdGxlAEZvbGRlcnMhVKpgQQAAABd0RVh0QXV0aG9yAExhcG8gQ2FsYW1hbmRyZWnfkRoqAAAAKXRFWHREZXNjcmlwdGlvbgBCYXNlZCBvZiBKYWt1YiBTdGVpbmVyIGRlc2lnbqCEBXMAAAGHSURBVDiNpZM/a5NRFId/53rTRGMaE4NODuLgUKEdbSkInepgKXWyswiK4ufwAyh+iFJ0cpEWdJAu/mk7FFpBcImF0peY5E3uue/5OTSiAfNC4x3ucM89z3nOgSMk8T9HHt+98RTkM0CKwxEcW+SD569213IBT1amWkurjyqFQgE0g1kGswyddgubb9a6oZfOvni9t51jMKXL9x767wdf/ipOTHjCoubq/2y3N7yDIO22/rzS4BAxPbuE+qUrI5NjSPF2/eWCr9dr8uPbLrJBtYnSOUzP3UalWkPS3B8JqF6+hqARvtG4eGZ+cRXVWgPkiUG/m6CTNHP1LVOoKryqojJ5AUnza27CKIALQWFZ/rD+DYgIQeFUFZbFMQADA9U4toFqHBjE8Q18UAUtg4gb/iG/r8GuDK0MQYsIqvCkWSftunL5PEQcROQEJg7iBCBBEqSBJEADaUiODkGaeSPeffywcevm/IKcpoWdT1sk8V7u37l+tVw6u97v92ZOAygWS587vXTlF5yo2ogR3/0GAAAAAElFTkSuQmCC",
