@@ -32,27 +32,31 @@ static char tohex(char high, char low)
 
 char *geturl(char *header)
 {
-	char *ptstart, *ptend;
-	char *ret, *write;
+	char *end, *inpt, *oupt, *ret;
+	char low, high;
 
-	ptstart = index(header, ' ') + 1; /* this points to the first slash */
-	ptend = strtok(ptstart, " ?"); /* this points to the end of the thing */
+	inpt = header = index(header, ' ') + 1;
 
-	write = ret = calloc(ptend - ptstart + 1, sizeof(char));
-	while (ptstart != ptend) {
-		if (*ptstart == '%') {
-			ptstart++;
-			char low, high;
-			high = *ptstart++;
-			low  = *ptstart;
-			*write = tohex(high, low);
+	while (*inpt && *inpt != ' ' && *inpt != '?') {
+		inpt++;
+	};
+	end = inpt;
+	oupt = ret = calloc(end - header + 1, sizeof(char));
+	inpt = header;
+
+	while (inpt != end) {
+		if (*inpt == '%') {
+			inpt++;
+			high = *inpt++;
+			low  = *inpt;
+			*oupt = tohex(high, low);
 		} else {
-			*write = *ptstart;
+			*oupt = *inpt;
 		}
-		ptstart ++;
-		write ++;
+		inpt++;
+		oupt++;
 	}
-	*write = '\0';
+	*oupt = '\0';
 	return ret;
 }
 
