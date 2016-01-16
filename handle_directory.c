@@ -20,6 +20,27 @@ static int sort_dirs(const void *a, const void *b)
 	}
 }
 
+static char * filesize(struct stat st)
+{
+	static char fsstring[32];
+	char mul = 0;
+
+	if (st.st_size > 1024) {
+		mul = 'k';
+		st.st_size /= 1024;
+	};
+	if (st.st_size > 1024) {
+		mul = 'M';
+		st.st_size /= 1024;
+	};
+	if (st.st_size > 1024) {
+		mul = 'G';
+		st.st_size /= 1024;
+	};
+	snprintf(fsstring, 32, "%d %cB", (int) st.st_size, mul? mul : ' ');
+	return fsstring;
+}
+
 static char * format_direntry(const char *url, const char * dirpath, struct dirent * entry)
 {
 	static char buffer[256];
@@ -32,7 +53,7 @@ static char * format_direntry(const char *url, const char * dirpath, struct dire
 	if (S_ISDIR(st.st_mode)) {
 		snprintf(buffer, 256, "<li class=\"folder\"><a href=\"%s/%s\">%s</a></li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name);
 	} else {
-		snprintf(buffer, 256, "<li class=\"file\"><a href=\"%s/%s\">%s</a></li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name);
+		snprintf(buffer, 256, "<li class=\"file\"><a href=\"%s/%s\">%s</a> [%s]</li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name, filesize(st));
 	}
 
 	return buffer;
