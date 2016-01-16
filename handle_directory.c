@@ -23,21 +23,18 @@ static int sort_dirs(const void *a, const void *b)
 static char * filesize(struct stat st)
 {
 	static char fsstring[32];
-	char mul = 0;
+	float size = (float) st.st_size;
+	char *mul = "\0kMGT";
 
-	if (st.st_size > 1024) {
-		mul = 'k';
-		st.st_size /= 1024;
-	};
-	if (st.st_size > 1024) {
-		mul = 'M';
-		st.st_size /= 1024;
-	};
-	if (st.st_size > 1024) {
-		mul = 'G';
-		st.st_size /= 1024;
-	};
-	snprintf(fsstring, 32, "%d %cB", (int) st.st_size, mul? mul : ' ');
+	while (size > 1024) {
+		size /= 1024;
+		mul++;
+	}
+	if (*mul) {
+		snprintf(fsstring, 32, "%.1f %cB", size, *mul);
+	} else {
+		snprintf(fsstring, 32, "%.0f B", size);
+	}
 	return fsstring;
 }
 
