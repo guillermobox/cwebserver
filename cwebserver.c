@@ -38,7 +38,7 @@ char *geturl(char *header)
 	ptstart = index(header, ' ') + 1; /* this points to the first slash */
 	ptend = index(ptstart, ' '); /* this points to the end of the thing */
 
-	write = ret = calloc(ptend - ptstart, sizeof(char));
+	write = ret = calloc(ptend - ptstart + 1, sizeof(char));
 	while (ptstart != ptend) {
 		if (*ptstart == '%') {
 			ptstart++;
@@ -52,7 +52,6 @@ char *geturl(char *header)
 		ptstart ++;
 		write ++;
 	}
-	//strncpy(ret, ptstart, ptend - ptstart);
 	*write = '\0';
 	return ret;
 }
