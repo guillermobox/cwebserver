@@ -83,7 +83,9 @@ int handle(int newsockfd, struct sockaddr_in socket, socklen_t socklen)
 		n = read(newsockfd, buffer, 255);
 
 	if (stat(path, &path_stat)) {
-		write(newsockfd, "HTTP/1.1 404 Not Found\n", 23);
+		if (write(newsockfd, "HTTP/1.1 404 Not Found\n", 23) != 23) {
+			error("Writing 404 page to stream");
+		};
 	} else {
 		if (S_ISDIR(path_stat.st_mode)) {
 			handle_directory(url, path, newsockfd);
