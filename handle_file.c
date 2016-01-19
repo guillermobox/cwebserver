@@ -10,25 +10,11 @@
 
 #include "util.h"
 
-#define BUFFLEN 256
-void handle_file(const char *url, const char *path, int fdout)
+static void handle_file_body(const char *path, const int fdout)
 {
-	char *buffer, headers[128];
-	struct stat st;
+	const int BUFFLEN = 4096;
+	char buffer[BUFFLEN];
 	int fd;
-	time_t t;
-	ssize_t nchars;
-	magic_t magic;
-
-	(void) url;
-
-	magic = magic_open(MAGIC_MIME);
-	if (magic == NULL) {
-		error("No magic found!");
-	}
-	if (magic_load(magic, NULL)) {
-		error("Impossible to load");
-	};
 
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
@@ -36,35 +22,66 @@ void handle_file(const char *url, const char *path, int fdout)
 		exit(EXIT_FAILURE);
 	}
 
-	buffer = (char *) malloc(BUFFLEN * sizeof(char));
-
-	stat(path, &st);
-
-	t = time(NULL);
-
-	bzero(headers, 128);
-	strcpy(headers, "HTTP/1.1 200 OK\n");
-	sprintf(headers + strlen(headers),
-		"Content-type: %s\n" "Content-length: %ld\n" "Date: %s\n",
-		magic_file(magic, path), st.st_size, ctime(&t));
-
-	write(fdout, headers, strlen(headers));
-
 	while (1) {
-		nchars = read(fd, buffer, BUFFLEN);
-		if (nchars == 0) {
+		int nread, nwrite;
+
+		nread = read(fd, buffer, BUFFLEN);
+		if (nread == 0) {
 			break;
 		}
-		else if (nchars < 0) {
+		else if (nread < 0) {
 			perror("reading file");
 			exit(1);
 		}
 		else {
-			write(fdout, buffer, nchars);
+			nwrite = 0;
+			while (nread) {
+				nwrite += write(fdout, buffer + nwrite, nread);
+				nread -= nwrite;
+			}
 		}
 	}
-	free(buffer);
 	close(fd);
+}
+
+static void handle_file_headers(const char *path, const int fdout)
+{
+	struct string headers = STRING_EMPTY;
+	magic_t magic;
+	time_t tnow;
+	struct stat st;
+
+	magic = magic_open(MAGIC_MIME);
+	if (magic == NULL) {
+		error("No magic found!");
+	}
+	if (magic_load(magic, NULL)) {
+		error("Impossible to load");
+	}
+
+	if (stat(path, &st) < 0) {
+		perror("Getting file status");
+		exit(EXIT_FAILURE);
+	}
+
+	tnow = time(NULL);
+
+	stringf(&headers, "HTTP/1.1 200 OK\n");
+	stringf(&headers, "Content-type: %s\n", magic_file(magic, path));
+	stringf(&headers, "Content-length: %ld\n", st.st_size);
+	stringf(&headers, "Date: %s\n", ctime(&tnow));
+
+	write(fdout, headers.content, headers.length);
+
 	magic_close(magic);
+	free(headers.content);
+}
+
+void handle_file(const char *url, const char *path, int fdout)
+{
+	(void) url;
+
+	handle_file_headers(path, fdout);
+	handle_file_body(path, fdout);
 }
 
