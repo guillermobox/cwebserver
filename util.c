@@ -4,10 +4,12 @@
 #include <stdarg.h>
 #include "util.h"
 
+struct string STRING_EMPTY = {NULL, 0, 0};
+
 char *stringf(struct string *s, const char *fmt, ...)
 {
 	va_list args;
-	size_t size;
+	int size;
 
 	if (!s)
 		return NULL;
@@ -43,7 +45,7 @@ char *stringf(struct string *s, const char *fmt, ...)
 
 	s->length += size;
 	return s->content;
-};
+}
 
 void error(char *str)
 {

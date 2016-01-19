@@ -11,6 +11,6 @@ struct string {
 	size_t length;
 };
 
-struct string STRING_EMPTY = {NULL, 0, 0};
+extern struct string STRING_EMPTY;
 
 char *stringf(struct string *s, const char *fmt, ...);
