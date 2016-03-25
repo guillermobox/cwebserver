@@ -9,6 +9,7 @@
 #include <magic.h>
 
 #include "util.h"
+#include "mimetype.h"
 
 static void handle_file_body(const char *path, const int fdout)
 {
@@ -50,6 +51,7 @@ static void handle_file_headers(const char *path, const int fdout)
 	magic_t magic;
 	time_t tnow;
 	struct stat st;
+	const char * mtype;
 
 	magic = magic_open(MAGIC_MIME);
 	if (magic == NULL) {
@@ -66,8 +68,12 @@ static void handle_file_headers(const char *path, const int fdout)
 
 	tnow = time(NULL);
 
+	mtype = guess_mimetype(path);
+	if (mtype == NULL)
+		mtype = magic_file(magic, path);
+
 	stringf(&headers, "HTTP/1.1 200 OK\n");
-	stringf(&headers, "Content-type: %s\n", magic_file(magic, path));
+	stringf(&headers, "Content-type: %s\n", mtype);
 	stringf(&headers, "Content-length: %ld\n", st.st_size);
 	stringf(&headers, "Date: %s\n", ctime(&tnow));
 
