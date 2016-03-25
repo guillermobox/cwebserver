@@ -27,10 +27,12 @@ const char * guess_mimetype(const char * path)
 	const char * ext;
 	ext = get_file_extension(path);
 
-	len = sizeof(mimetypes) / sizeof(*mimetypes);
-	for (i = 0; i < len; i++) {
-		if (strcmp(ext, mimetypes[i].extension) == 0)
-			return mimetypes[i].mimetype;
+	if (ext != NULL) {
+		len = sizeof(mimetypes) / sizeof(*mimetypes);
+		for (i = 0; i < len; i++) {
+			if (strcmp(ext, mimetypes[i].extension) == 0)
+				return mimetypes[i].mimetype;
+		}
 	}
 
 #if HAS_MAGIC
