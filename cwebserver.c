@@ -88,7 +88,14 @@ int handle(int newsockfd, struct sockaddr_in socket, socklen_t socklen)
 		};
 	} else {
 		if (S_ISDIR(path_stat.st_mode)) {
-			handle_directory(url, path, newsockfd);
+			struct stat index_stat;
+			char index_path[PATH_MAX];
+			snprintf(index_path, PATH_MAX, "%s/index.html", path);
+			stat(index_path, &index_stat);
+			if (S_ISREG(index_stat.st_mode))
+				handle_file(url, index_path, newsockfd);
+			else
+				handle_directory(url, path, newsockfd);
 		} else {
 			handle_file(url, path, newsockfd);
 		}
