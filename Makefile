@@ -1,9 +1,18 @@
 LDFLAGS += -lmagic
 CFLAGS += -Wall -O2 -pedantic -Wextra -DHAS_MAGIC
 
+Q := @
+
 .PHONY: clean
 
 cwebserver: cwebserver.o handle_file.o handle_directory.o util.o mimetype.o
+	@echo "  LD  " $@
+	$(Q)$(CC) $(LDFLAGS) $^ -o $@
+
+%.o: %.c
+	@echo "  CC  " $@
+	$(Q)$(CC) -c $(CFLAGS) $^ -o $@
 
 clean:
-	rm -f *.o cwebserver
+	@echo " CLEAN "
+	$(Q)rm -f *.o cwebserver
