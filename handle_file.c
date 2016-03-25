@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <time.h>
 #include <unistd.h>
-#include <magic.h>
 
 #include "util.h"
 #include "mimetype.h"
@@ -48,18 +47,9 @@ static void handle_file_body(const char *path, const int fdout)
 static void handle_file_headers(const char *path, const int fdout)
 {
 	struct string headers = STRING_EMPTY;
-	magic_t magic;
 	time_t tnow;
 	struct stat st;
 	const char * mtype;
-
-	magic = magic_open(MAGIC_MIME);
-	if (magic == NULL) {
-		error("No magic found!");
-	}
-	if (magic_load(magic, NULL)) {
-		error("Impossible to load");
-	}
 
 	if (stat(path, &st) < 0) {
 		perror("Getting file status");
@@ -69,8 +59,6 @@ static void handle_file_headers(const char *path, const int fdout)
 	tnow = time(NULL);
 
 	mtype = guess_mimetype(path);
-	if (mtype == NULL)
-		mtype = magic_file(magic, path);
 
 	stringf(&headers, "HTTP/1.1 200 OK\n");
 	stringf(&headers, "Content-type: %s\n", mtype);
@@ -79,7 +67,6 @@ static void handle_file_headers(const char *path, const int fdout)
 
 	write(fdout, headers.content, headers.length);
 
-	magic_close(magic);
 	free(headers.content);
 }
 
