@@ -19,6 +19,22 @@
 int sockfd = -1;
 char basedir[PATH_MAX];
 
+#include <time.h>
+void handle_redirection(const char *url, const char *newurl, int fdout)
+{
+	(void) url;
+	time_t tnow;
+	struct string response = STRING_EMPTY;
+
+	tnow = time(NULL);
+	stringf(&response, "HTTP/1.1 301 Moved Permanently\n");
+	stringf(&response, "Location: http://localhost:8080/%s\n", newurl + 1);
+	stringf(&response, "Date: %s\n", ctime(&tnow));
+
+	write(fdout, response.content, response.length);
+	free(response.content);
+}
+
 static char tohex(char high, char low)
 {
 	high -= 48;
@@ -88,14 +104,22 @@ int handle(int newsockfd, struct sockaddr_in socket, socklen_t socklen)
 		};
 	} else {
 		if (S_ISDIR(path_stat.st_mode)) {
-			struct stat index_stat;
-			char index_path[PATH_MAX];
-			snprintf(index_path, PATH_MAX, "%s/index.html", path);
-			stat(index_path, &index_stat);
-			if (S_ISREG(index_stat.st_mode))
-				handle_file(url, index_path, newsockfd);
-			else
-				handle_directory(url, path, newsockfd);
+			if (path[strlen(path)-1] != '/') {
+				size_t len;
+				len = strlen(url);
+				url[len] = '/';
+				url[len+1] = 0;
+				handle_redirection(url, url, newsockfd);
+			} else {
+				struct stat index_stat;
+				char index_path[PATH_MAX];
+				snprintf(index_path, PATH_MAX, "%s/index.html", path);
+				stat(index_path, &index_stat);
+				if (S_ISREG(index_stat.st_mode))
+					handle_file(url, index_path, newsockfd);
+				else
+					handle_directory(url, path, newsockfd);
+			}
 		} else {
 			handle_file(url, path, newsockfd);
 		}
