@@ -44,7 +44,7 @@ static char * filesize(struct stat st)
 
 static char * format_direntry(const char *url, const char * dirpath, struct dirent * entry)
 {
-	static char buffer[256];
+	static char buffer[1024];
 	char path[PATH_MAX];
 	struct stat st;
 	
@@ -52,9 +52,9 @@ static char * format_direntry(const char *url, const char * dirpath, struct dire
 	stat(path, &st);
 
 	if (S_ISDIR(st.st_mode)) {
-		snprintf(buffer, 256, "<li class=\"folder\"><a href=\"%s%s\">%s</a></li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name);
+		snprintf(buffer, 1024, "<li class=\"folder\"><a href=\"%s%s\">%s</a></li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name);
 	} else {
-		snprintf(buffer, 256, "<li class=\"file\"><a href=\"%s%s\">%s</a> [%s]</li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name, filesize(st));
+		snprintf(buffer, 1024, "<li class=\"file\"><a href=\"%s%s\">%s</a> [%s]</li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name, filesize(st));
 	}
 
 	return buffer;
@@ -62,13 +62,13 @@ static char * format_direntry(const char *url, const char * dirpath, struct dire
 
 void handle_directory(const char * url, const char * path, int fdout)
 {
-	char headers[128], buffer[1024 * 256];
+	char headers[128];
 	DIR * dir;
 	struct dirent * entry, * entries;
 	size_t allocated, used;
 	time_t t;
+	struct string buffer = STRING_EMPTY;
 
-	bzero(buffer, 1024 * 256);
 	bzero(headers, 128);
 
 	dir = opendir(path);
@@ -77,7 +77,7 @@ void handle_directory(const char * url, const char * path, int fdout)
 		exit(EXIT_FAILURE);
 	}
 
-	sprintf(buffer, "<!DOCTYPE html>\n"
+	stringf(&buffer, "<!DOCTYPE html>\n"
 			"<html>\n"
 			"<meta charset=\"UTF-8\">\n"
 			"<head>\n<style type=\"text/css\">li.folder{\nfont-family:monospace;list-style-image: url(data:image/png;base64,%s);list-style-position:inside;\n}\nli.file{\nfont-family:monospace;list-style-image: url(data:image/png;base64,%s);list-style-position: inside;\n}\n</style>\n<title>%s</title></head>\n"
@@ -102,24 +102,24 @@ void handle_directory(const char * url, const char * path, int fdout)
 
 	entry = entries;
 	while (used) {
-		sprintf(buffer + strlen(buffer), "%s", format_direntry(url, path, entry));
+		stringf(&buffer, "%s", format_direntry(url, path, entry));
 		used--;
 		entry++;
 	}
 
-	strcat(buffer,"</ul></body>\n</html>\n");
+	stringf(&buffer, "</ul></body>\n</html>\n");
 
 	t = time(NULL);
 
 	strcpy(headers, "HTTP/1.1 200 OK\n");
 	sprintf(headers + strlen(headers),
 		"Content-type: %s\n" "Content-length: %lu\n" "Date: %s\n",
-		"text/html", (unsigned long) strlen(buffer), ctime(&t));
+		"text/html", (unsigned long) buffer.length, ctime(&t));
 
 	if (write(fdout, headers, strlen(headers)) != (ssize_t) strlen(headers)) {
 		error("error writing directory headers");
 	};
-	if (write(fdout, buffer, strlen(buffer)) != (ssize_t) strlen(buffer)) {
+	if (write(fdout, buffer.content, buffer.length) != (ssize_t) buffer.length) {
 		error("error writing directory content");
 	};
 
