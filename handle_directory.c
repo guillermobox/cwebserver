@@ -52,9 +52,9 @@ static char * format_direntry(const char *url, const char * dirpath, struct dire
 	stat(path, &st);
 
 	if (S_ISDIR(st.st_mode)) {
-		snprintf(buffer, 256, "<li class=\"folder\"><a href=\"%s/%s\">%s</a></li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name);
+		snprintf(buffer, 256, "<li class=\"folder\"><a href=\"%s%s\">%s</a></li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name);
 	} else {
-		snprintf(buffer, 256, "<li class=\"file\"><a href=\"%s/%s\">%s</a> [%s]</li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name, filesize(st));
+		snprintf(buffer, 256, "<li class=\"file\"><a href=\"%s%s\">%s</a> [%s]</li>\n", strlen(url) > 1? url : "", entry->d_name, entry->d_name, filesize(st));
 	}
 
 	return buffer;
