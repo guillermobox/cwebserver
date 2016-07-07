@@ -25,6 +25,7 @@ static struct st_mimetype mimetypes[] = {
 	{"gz", "application/x-gzip"},
 	{"hqx", "application/mac-binhex40"},
 	{"html", "text/html"},
+	{"ico", "image/x-icon"},
 	{"jar", "application/java-archive"},
 	{"jpg", "image/jpeg"},
 	{"js", "application/x-javascript"},
