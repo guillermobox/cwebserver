@@ -22,16 +22,19 @@ char basedir[PATH_MAX];
 #include <time.h>
 void handle_redirection(const char *url, const char *newurl, int fdout)
 {
-	(void) url;
 	time_t tnow;
 	struct string response = STRING_EMPTY;
+	(void) url;
 
 	tnow = time(NULL);
 	stringf(&response, "HTTP/1.1 301 Moved Permanently\n");
-	stringf(&response, "Location: http://localhost:8080/%s\n", newurl + 1);
+	stringf(&response, "Location: /%s\n", newurl + 1);
 	stringf(&response, "Date: %s\n", ctime(&tnow));
 
-	write(fdout, response.content, response.length);
+	if (write(fdout, response.content, response.length) != (ssize_t) response.length) {
+		error("error writing on file descriptor");
+	};
+
 	free(response.content);
 }
 
@@ -159,6 +162,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serv_addr, cli_addr;
 	int err;
 	int sleeptime = 10;
+	int one = 1;
 
 	if (argc < 2) {
 		printf("Please provide a directory to serve\n");
@@ -176,11 +180,14 @@ int main(int argc, char *argv[])
 	signal(SIGCHLD, &waitforit);
 
 	if (getuid())
-		portno = 8080;
+		portno = 8081;
 	else
 		portno = 80;
 
+
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char*)&one, sizeof(one));
+
 	if (sockfd < 0)
 		error("error socketing");
 

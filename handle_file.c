@@ -10,9 +10,10 @@
 #include "util.h"
 #include "mimetype.h"
 
+#define BUFFLEN 4096
+
 static void handle_file_body(const char *path, const int fdout)
 {
-	const int BUFFLEN = 4096;
 	char buffer[BUFFLEN];
 	int fd;
 
@@ -65,7 +66,9 @@ static void handle_file_headers(const char *path, const int fdout)
 	stringf(&headers, "Content-length: %ld\n", st.st_size);
 	stringf(&headers, "Date: %s\n", ctime(&tnow));
 
-	write(fdout, headers.content, headers.length);
+	if (write(fdout, headers.content, headers.length) != (ssize_t) headers.length) {
+		error("error writing file headers");
+	};
 
 	free(headers.content);
 }

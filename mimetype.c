@@ -13,6 +13,7 @@ static char default_mimetype[] = "application/binary";
 static struct st_mimetype mimetypes[] = {
 	{"css", "text/css"},
 	{"c", "text/x-c"},
+	{"html", "text/html"},
 };
 
 static const char * get_file_extension(const char * path) {

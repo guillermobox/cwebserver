@@ -1,5 +1,5 @@
-LDFLAGS += -lmagic
-CFLAGS += -Wall -O2 -pedantic -Wextra -DHAS_MAGIC
+LDFLAGS +=
+CFLAGS += -Wall -O2 -pedantic -Wextra
 
 Q := @
 
