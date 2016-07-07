@@ -9,11 +9,50 @@ struct st_mimetype {
 	const char mimetype[64];
 };
 
-static char default_mimetype[] = "application/binary";
+static char default_mimetype[] = "text/plain";
+
 static struct st_mimetype mimetypes[] = {
-	{"css", "text/css"},
+	{"au", "audio/basic"},
+	{"avi", "video/avi"},
+	{"bmp", "image/bmp"},
+	{"bz2", "application/x-bzip2"},
 	{"c", "text/x-c"},
+	{"css", "text/css"},
+	{"dtd", "application/xml-dtd"},
+	{"doc", "application/msword"},
+	{"exe", "application/octet-stream"},
+	{"gif", "image/gif"},
+	{"gz", "application/x-gzip"},
+	{"hqx", "application/mac-binhex40"},
 	{"html", "text/html"},
+	{"jar", "application/java-archive"},
+	{"jpg", "image/jpeg"},
+	{"js", "application/x-javascript"},
+	{"midi", "audio/x-midi"},
+	{"mp3", "audio/mpeg"},
+	{"mpeg", "video/mpeg"},
+	{"ogg", "audio/vorbis"},
+	{"pdf", "application/pdf"},
+	{"pl", "application/x-perl"},
+	{"png", "image/png"},
+	{"ppt", "application/vnd.ms-powerpoint"},
+	{"ps", "application/postscript"},
+	{"qt", "video/quicktime"},
+	{"rdf", "application/rdf"},
+	{"rtf", "application/rtf"},
+	{"sgml", "text/sgml"},
+	{"sit", "application/x-stuffit"},
+	{"svg", "image/svg+xml"},
+	{"swf", "application/x-shockwave-flash"},
+	{"ta","r.gz application/x-tar"},
+	{"tgz", "application/x-tar"},
+	{"tiff", "image/tiff"},
+	{"tsv", "text/tab-separated-values"},
+	{"txt", "text/plain"},
+	{"wav", "audio/wav"},
+	{"xls", "application/vnd.ms-excel"},
+	{"xml", "application/xml"},
+	{"zip", "application/zip"},
 };
 
 static const char * get_file_extension(const char * path) {
