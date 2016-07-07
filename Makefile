@@ -1,5 +1,5 @@
 LDFLAGS +=
-CFLAGS += -Wall -O2 -pedantic -Wextra
+CFLAGS += -Wall -O2 -pedantic -Wextra -g
 
 Q := @
 

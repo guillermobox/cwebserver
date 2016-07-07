@@ -110,6 +110,7 @@ int handle(int newsockfd, struct sockaddr_in socket, socklen_t socklen)
 			if (path[strlen(path)-1] != '/') {
 				size_t len;
 				len = strlen(url);
+				url = realloc(url, len + 2);
 				url[len] = '/';
 				url[len+1] = 0;
 				handle_redirection(url, url, newsockfd);
@@ -117,6 +118,7 @@ int handle(int newsockfd, struct sockaddr_in socket, socklen_t socklen)
 				struct stat index_stat;
 				char index_path[PATH_MAX];
 				snprintf(index_path, PATH_MAX, "%s/index.html", path);
+				index_stat.st_mode = 0;
 				stat(index_path, &index_stat);
 				if (S_ISREG(index_stat.st_mode))
 					handle_file(url, index_path, newsockfd);
