@@ -20,6 +20,32 @@ int sockfd = -1;
 char basedir[PATH_MAX];
 
 #include <time.h>
+void handle_notfound(int fdout)
+{
+	time_t tnow;
+	struct string headers = STRING_EMPTY;
+
+	do {
+		tnow = time(NULL);
+		stringf(&headers, "Content-type: %s\n", "text/plain");
+		stringf(&headers, "Content-length: %ld\n", 10);
+		stringf(&headers, "Date: %s\n", ctime(&tnow));
+
+		if (write(fdout, "HTTP/1.1 404 Not Found\n", 23) != 23) {
+			break;
+		};
+		if (write(fdout, headers.content, headers.length) != (ssize_t) headers.length) {
+			break;
+		};
+		if (write(fdout, "Not found\n", 10) != 10){
+			break;
+		};
+		free(headers.content);
+		return;
+	} while (0);
+	error("error writing on socket the 404 page");
+}
+
 void handle_redirection(const char *url, const char *newurl, int fdout)
 {
 	time_t tnow;
@@ -102,9 +128,7 @@ int handle(int newsockfd, struct sockaddr_in socket, socklen_t socklen)
 		n = read(newsockfd, buffer, 255);
 
 	if (stat(path, &path_stat)) {
-		if (write(newsockfd, "HTTP/1.1 404 Not Found\n", 23) != 23) {
-			error("Writing 404 page to stream");
-		};
+		handle_notfound(newsockfd);
 	} else {
 		if (S_ISDIR(path_stat.st_mode)) {
 			if (path[strlen(path)-1] != '/') {
