@@ -25,6 +25,7 @@ static void handle_file_body(const char *path, const int fdout)
 
 	while (1) {
 		int nread, nwrite;
+		char *wptr;
 
 		nread = read(fd, buffer, BUFFLEN);
 		if (nread == 0) {
@@ -35,10 +36,16 @@ static void handle_file_body(const char *path, const int fdout)
 			exit(1);
 		}
 		else {
+			wptr = buffer;
 			nwrite = 0;
 			while (nread) {
-				nwrite += write(fdout, buffer + nwrite, nread);
+				nwrite = write(fdout, wptr, nread);
+				if (nwrite < 0) {
+					perror("writing file in socket");
+					exit(1);
+				}
 				nread -= nwrite;
+				wptr += nwrite;
 			}
 		}
 	}
