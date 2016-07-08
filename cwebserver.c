@@ -120,7 +120,7 @@ int handle(int newsockfd, struct sockaddr_in socket, socklen_t socklen)
 
 	url = geturl(buffer);
 
-	printf("[%s] %s\n", inet_ntoa(socket.sin_addr), url);
+	info("%s GET %s", inet_ntoa(socket.sin_addr), url);
 
 	snprintf(path, PATH_MAX, "%s/%s", basedir, url);
 
@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
 		sleep(sleeptime);
 	}
 
-	info("Socket binded\n");
+	info("Socket binded");
 
 	listen(sockfd, 5);
 	clilen = sizeof(cli_addr);

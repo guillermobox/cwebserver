@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "util.h"
+#include <time.h>
 
 struct string STRING_EMPTY = {NULL, 0, 0};
 
@@ -56,6 +57,15 @@ void error(char *str)
 void info(const char *format, ...)
 {
 	va_list args;
+
+	time_t timer;
+	struct tm * tmtime;
+	char timebuffer[64];
+
+	time(&timer);
+	tmtime = localtime(&timer);
+	strftime(timebuffer, 64, "%Y-%m-%d %H:%M:%S", tmtime);
+	printf("%s ", timebuffer);
 
 	va_start(args, format);
 	vprintf(format, args);
